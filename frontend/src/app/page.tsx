@@ -33,9 +33,7 @@ export default function Home() {
       <nav className="fixed top-0 w-full z-50 p-4">
         <div className="glassmorphism rounded-2xl max-w-[1920px] mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center">
-              <Play className="text-white w-5 h-5 fill-white" />
-            </div>
+            <img src="/images/avatar.png" alt="Hyver Logo" className="w-10 h-10 rounded-xl object-cover" />
             <h1 className="text-xl font-bold tracking-tight">VOD <span className="text-violet-400">Hyver</span></h1>
           </div>
           

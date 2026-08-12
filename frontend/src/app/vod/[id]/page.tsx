@@ -198,9 +198,9 @@ export default function VodPage() {
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-[#141419] p-4 rounded-xl border border-white/5">
               {/* Аватар стримера */}
               <img 
-                src="https://ui-avatars.com/api/?name=Hyver&background=8b5cf6&color=fff&size=128" 
+                src="/images/avatar.png" 
                 alt="Hyver" 
-                className="w-16 h-16 rounded-full border-2 border-violet-500"
+                className="w-16 h-16 rounded-full border-2 border-violet-500 object-cover"
               />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
