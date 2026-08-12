@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Eye, Share2, Maximize2, Monitor, Download, Bot, Smile, ChevronDown, ChevronRight, PlaySquare, Share, LayoutTemplate, Youtube } from "lucide-react";
+import { ArrowLeft, Play, Clock, Eye, Share2, Maximize2, Monitor, Download, Bot, Smile, ChevronDown, ChevronRight, PlaySquare, Share, LayoutTemplate } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import dynamic from 'next/dynamic';

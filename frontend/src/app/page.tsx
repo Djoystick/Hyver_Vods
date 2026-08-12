@@ -4,21 +4,34 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Play, Clock, Eye, Search } from "lucide-react";
 
-const DUMMY_VODS = [
-  { id: 1, title: "ИГРАЕМ В НОВЫЙ ХОРРОР | ПУГАЕМСЯ ВМЕСТЕ", date: "12 Авг 2026", duration: "4:23:15", views: "12.4k", thumbnail: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop" },
-  { id: 2, title: "ЧИЛЛ СТРИМ | ОБЩЕНИЕ И РЕАКЦИИ", date: "10 Авг 2026", duration: "6:15:00", views: "18.2k", thumbnail: "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=800&auto=format&fit=crop" },
-  { id: 3, title: "ПРОХОДИМ ELDEN RING | БОССЫ И БОЛЬ", date: "08 Авг 2026", duration: "8:42:10", views: "25.1k", thumbnail: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop" },
-  { id: 4, title: "СМОТРИМ КИНО С ЧАТОМ", date: "05 Авг 2026", duration: "3:10:05", views: "15.8k", thumbnail: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=800&auto=format&fit=crop" },
-  { id: 5, title: "СЮЖЕТОЧКА НА ВЕЧЕР", date: "03 Авг 2026", duration: "5:30:22", views: "11.2k", thumbnail: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop" },
-  { id: 6, title: "ПОДКАСТ ПРО ИГРЫ И ЖИЗНЬ", date: "01 Авг 2026", duration: "2:45:30", views: "19.5k", thumbnail: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=800&auto=format&fit=crop" },
-];
+import { useEffect, useState } from "react";
+
+interface VOD {
+  id: string;
+  title: string;
+  date: string;
+  duration: string;
+  views: string;
+  category: string;
+  thumbnail: string;
+  youtubeId: string;
+}
 
 export default function Home() {
+  const [vods, setVods] = useState<VOD[]>([]);
+
+  useEffect(() => {
+    fetch('/data/vods.json')
+      .then(res => res.json())
+      .then(data => setVods(data.slice(0, 20))) // Показываем только последние 20
+      .catch(err => console.error(err));
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 p-4">
-        <div className="glassmorphism rounded-2xl max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="glassmorphism rounded-2xl max-w-[1920px] mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center">
               <Play className="text-white w-5 h-5 fill-white" />
@@ -36,26 +49,26 @@ export default function Home() {
           </div>
 
           <div className="flex gap-4">
-            <button className="text-sm font-medium hover:text-violet-400 transition-colors">Архив</button>
+            <Link href="/search" className="text-sm font-medium hover:text-violet-400 transition-colors">Архив</Link>
             <button className="text-sm font-medium hover:text-violet-400 transition-colors">Клипы</button>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
+      <main className="max-w-[1920px] mx-auto px-6 pt-32 pb-20">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h2 className="text-4xl font-bold mb-4 neon-text">Последние записи</h2>
+          <h2 className="text-3xl font-bold mb-2">Последние записи</h2>
           <p className="text-gray-400">Архив стримов в высоком качестве без тормозов.</p>
         </motion.div>
 
         {/* VOD Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {DUMMY_VODS.map((vod, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+          {vods.map((vod, index) => (
             <Link href={`/vod/${vod.id}`} key={vod.id}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
