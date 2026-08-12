@@ -31,6 +31,18 @@ function drawProgressBar(label, percent, details) {
     process.stdout.write(`\r\x1b[K[\x1b[36m${label}\x1b[0m] [${bar}] ${safePercent.toFixed(1)}% | ${details}`);
 }
 
+function formatTime(ms) {
+    if (!ms || ms < 0) return "0с";
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    if (m >= 60) {
+        const h = Math.floor(m / 60);
+        return `${h}ч ${m % 60}м`;
+    }
+    return m > 0 ? `${m}м ${s}с` : `${s}с`;
+}
+
 // Утилита для интерактивного ввода
 const askQuestion = (query) => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -148,6 +160,7 @@ async function uploadChunks(playlistPath, tempDir) {
     let fileIdMap = {};
     let uploadedCount = 0;
     const totalCount = tsFiles.length;
+    const uploadStartTime = Date.now();
 
     for (let i = 0; i < tsFiles.length; i++) {
         const file = tsFiles[i];
@@ -159,7 +172,14 @@ async function uploadChunks(playlistPath, tempDir) {
         while (!success) {
             try {
                 const percent = (uploadedCount / totalCount) * 100;
-                drawProgressBar('Загрузка', percent, `Чанк ${uploadedCount}/${totalCount} [${file}]`);
+                let etaStr = "Вычисление...";
+                if (uploadedCount > 0) {
+                    const elapsed = Date.now() - uploadStartTime;
+                    const remainingMs = (elapsed / uploadedCount) * (totalCount - uploadedCount);
+                    etaStr = formatTime(remainingMs);
+                }
+                
+                drawProgressBar('Загрузка', percent, `Чанк ${uploadedCount}/${totalCount} [${file}] | Осталось: ${etaStr}`);
                 
                 const options = topicId ? { message_thread_id: topicId } : {};
                 const fileStream = fs.createReadStream(filePath);
@@ -168,7 +188,10 @@ async function uploadChunks(playlistPath, tempDir) {
                 fileIdMap[file] = msg.document.file_id;
                 
                 uploadedCount++;
-                drawProgressBar('Загрузка', (uploadedCount / totalCount) * 100, `Чанк ${uploadedCount}/${totalCount} [Успех]`);
+                
+                const elapsedAfter = Date.now() - uploadStartTime;
+                const remainingMsAfter = (elapsedAfter / uploadedCount) * (totalCount - uploadedCount);
+                drawProgressBar('Загрузка', (uploadedCount / totalCount) * 100, `Чанк ${uploadedCount}/${totalCount} [Успех] | Осталось: ${formatTime(remainingMsAfter)}`);
                 
                 success = true;
                 await new Promise(r => setTimeout(r, 1000)); // Пауза 1 секунда
@@ -195,6 +218,7 @@ async function uploadChunks(playlistPath, tempDir) {
 }
 
 async function main() {
+    const scriptStartTime = Date.now();
     console.clear();
     console.log('==============================================');
     console.log(' VOD Hyver - Умный Загрузчик (Full Download)');
@@ -289,8 +313,10 @@ async function main() {
         console.log('[*] Очистка временных файлов (удаление гигабайтов мусора)...');
         fs.rmSync(tempDir, { recursive: true, force: true });
 
+        const totalScriptTime = Date.now() - scriptStartTime;
         console.log('\n==================================');
         console.log('✅ УСПЕХ! Стрим успешно добавлен!');
+        console.log(`⏱ Общее время обработки: ${formatTime(totalScriptTime)}`);
         console.log(`ID: ${newId} | ${newVod.title}`);
         console.log(`Не забудьте сделать: git add . && git commit -m "Auto add VOD ${newId}" && git push`);
         console.log('==================================\n');
