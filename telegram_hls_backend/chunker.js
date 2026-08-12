@@ -84,6 +84,10 @@ function downloadFullVideo(url, destPath) {
                 const speed = `${match[4]}${match[5]}`;
                 const eta = match[6];
                 drawProgressBar('Скачивание', percent, `Размер: ${size} | Скорость: ${speed} | Осталось: ${eta}`);
+            } else if (line.includes('[Merger]') || line.includes('[Fixup') || line.includes('Merging formats')) {
+                drawProgressBar('Склеивание', 100, 'Склеивание аудио и видео... (занимает до 15-20 минут для 20ГБ)');
+            } else if (line.includes('[download] 100%')) {
+                drawProgressBar('Скачивание', 100, 'Файлы загружены. Ожидайте начало склейки...');
             }
         });
 
