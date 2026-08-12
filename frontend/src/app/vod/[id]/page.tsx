@@ -198,7 +198,7 @@ export default function VodPage() {
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-[#141419] p-4 rounded-xl border border-white/5">
               {/* Аватар стримера */}
               <img 
-                src="https://static-cdn.jtvnw.net/jtv_user_pictures/54d19318-6c8c-4f81-a968-07bc305417b7-profile_image-70x70.png" 
+                src="https://ui-avatars.com/api/?name=Hyver&background=8b5cf6&color=fff&size=128" 
                 alt="Hyver" 
                 className="w-16 h-16 rounded-full border-2 border-violet-500"
               />
@@ -209,14 +209,6 @@ export default function VodPage() {
                 </div>
                 <p className="text-gray-400 text-sm">312 тыс. отслеживающих</p>
               </div>
-              <div className="sm:ml-auto mt-2 sm:mt-0 flex gap-2">
-                <a href="https://www.twitch.tv/hyver" target="_blank" rel="noreferrer" className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded transition-colors text-sm">
-                  На Twitch
-                </a>
-                <a href="https://t.me/hyvert" target="_blank" rel="noreferrer" className="px-4 py-2 bg-[#2481cc] hover:bg-[#1d6fae] text-white font-semibold rounded transition-colors text-sm">
-                  Telegram
-                </a>
-              </div>
             </div>
 
             <div className="glassmorphism p-4 rounded-xl inline-block w-fit">
@@ -225,8 +217,8 @@ export default function VodPage() {
                 <span className="text-gray-200 font-semibold">{vod?.category || "Just Chatting"}</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed max-w-3xl">
-                Официальный архив стримов. Здесь хранятся все записи прямых трансляций, включая игровые прохождения, просмотры видео (ВВХ) и разговорные стримы.<br/><br/>
-                Подписывайтесь на уведомления в Telegram, чтобы не пропускать новые загрузки!
+                Официальный архив стримов. Здесь хранятся все записи прямых трансляций, включая игровые прохождения, реакты и разговорные стримы.<br/><br/>
+                Приятного просмотра!
               </p>
             </div>
           </div>
@@ -243,12 +235,12 @@ export default function VodPage() {
           <div className="flex-1 overflow-y-auto p-4 flex flex-col justify-start gap-3 text-sm text-gray-300 bg-[#0f0f13] custom-scrollbar">
             {/* Имитация реального чата Hyver */}
             <div className="text-center text-gray-600 mb-2 text-xs">Добро пожаловать в чат!</div>
-            <div className="break-words"><span className="text-[#FF5252] font-bold">Nightbot:</span> Добро пожаловать на канал Hyver! Подписывайтесь на наш Telegram: t.me/hyvert</div>
+            <div className="break-words"><span className="text-[#FF5252] font-bold">Nightbot:</span> Добро пожаловать на канал Hyver! Всем приятного просмотра.</div>
             <div className="break-words"><span className="text-[#FFB300] font-bold">RandomViewer:</span> здарова работяги</div>
             <div className="break-words"><span className="text-[#4CAF50] font-bold">PepeFrog:</span> KEKW LUL</div>
             <div className="break-words flex gap-2 items-start">
               <span className="text-[#2196F3] font-bold shrink-0">Oldfag2018:</span> 
-              <span>когда ВВХ? 🤔</span>
+              <span>во что сегодня играем? 🤔</span>
             </div>
             <div className="break-words"><span className="text-[#9C27B0] font-bold">GamerPro:</span> о, подруб</div>
             <div className="break-words"><span className="text-white font-bold bg-[#E91E63] px-1 rounded mr-1 text-[10px]">SUB</span><span className="text-[#00BCD4] font-bold">Hyver_Fan:</span> Привет! Наконец-то дождались)</div>
