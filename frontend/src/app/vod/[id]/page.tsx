@@ -1,23 +1,51 @@
 'use client';
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Play, Clock, Eye, Share2, Maximize2, Monitor, Download, Bot, Smile, ChevronDown, ChevronRight, PlaySquare, Share, LayoutTemplate } from "lucide-react";
+import { ArrowLeft, Play, Clock, Eye, Share2, Maximize2, Monitor, Download, Bot, Smile, ChevronDown, ChevronRight, PlaySquare, Share, LayoutTemplate, Youtube } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import dynamic from 'next/dynamic';
 
 const Player = dynamic(() => import('@/components/Player'), { ssr: false });
 
+interface VOD {
+  id: string;
+  title: string;
+  date: string;
+  duration: string;
+  views: string;
+  category: string;
+  thumbnail: string;
+  youtubeId: string;
+}
+
 export default function VodPage() {
   const params = useParams();
   const id = params.id;
 
+  const [vod, setVod] = useState<VOD | null>(null);
   const [activeTab, setActiveTab] = useState<'playlist' | 'timecodes'>('timecodes');
-  const [source, setSource] = useState<'twitch' | 'youtube' | 'torrent'>('youtube');
+  const [source, setSource] = useState<'youtube' | 'torrent'>('torrent');
   const [chatSettings, setChatSettings] = useState({ bots: false, emotes: true });
   const [theaterMode, setTheaterMode] = useState(false);
   const playerContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('/data/vods.json')
+      .then(res => res.json())
+      .then((data: VOD[]) => {
+        const found = data.find(v => v.id === id);
+        if (found) {
+          setVod(found);
+          // Устанавливаем YouTube по умолчанию, если он есть
+          if (found.youtubeId) {
+            setSource('youtube');
+          }
+        }
+      })
+      .catch(err => console.error(err));
+  }, [id]);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -40,8 +68,6 @@ export default function VodPage() {
     { section: 'The Backrooms: Incident 1997 - пройдено', items: [{ time: '49:30', title: 'Меню' }, { time: '50:47', title: 'Интро' }, { time: '51:22', title: 'Игра' }] },
     { section: 'Lurking (демо)', items: [{ time: '1:22:01', title: 'Меню' }, { time: '1:25:51', title: 'Интро' }] },
   ];
-
-  const DUMMY_STREAM_URL = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f13]">
@@ -115,14 +141,18 @@ export default function VodPage() {
         <div ref={playerContainerRef} className="flex-grow flex flex-col bg-black relative overflow-y-auto custom-scrollbar">
           {/* Плеер */}
           <div className={`w-full relative bg-black flex items-center justify-center transition-all ${theaterMode ? 'h-[calc(100vh-125px)]' : 'aspect-video'}`}>
-            {source === 'youtube' ? (
+            {source === 'youtube' && vod?.youtubeId ? (
               <div className="w-full h-full [&>.plyr]:h-full [&_.plyr__video-wrapper]:h-full [&_video]:h-full">
-                <Player src={DUMMY_STREAM_URL} />
+                <Player src={vod.youtubeId} type="youtube" />
+              </div>
+            ) : source === 'torrent' ? (
+              <div className="w-full h-full [&>.plyr]:h-full [&_.plyr__video-wrapper]:h-full [&_video]:h-full">
+                <Player src={`/vods/${id}/master.m3u8`} type="hls" />
               </div>
             ) : (
               <div className="text-gray-500 flex flex-col items-center gap-4">
                 <Play className="w-16 h-16 opacity-20" />
-                <p>Источник "{source}" недоступен. Выберите YouTube.</p>
+                <p>Загрузка источника...</p>
               </div>
             )}
           </div>
@@ -130,14 +160,18 @@ export default function VodPage() {
           {/* Панель кнопок под плеером */}
           <div className="bg-[#141419] p-3 flex flex-wrap items-center justify-between border-b border-white/5">
             <div className="flex gap-2">
-              <button onClick={() => setSource('twitch')} className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'twitch' ? 'bg-[#9146FF] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
-                Twitch
-              </button>
-              <button onClick={() => setSource('youtube')} className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'youtube' ? 'bg-[#FF0000] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
+              <button 
+                onClick={() => setSource('youtube')} 
+                disabled={!vod?.youtubeId}
+                className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${source === 'youtube' ? 'bg-[#FF0000] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+              >
                 <PlaySquare className="w-4 h-4" /> YouTube
               </button>
-              <button onClick={() => setSource('torrent')} className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'torrent' ? 'bg-green-600 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
-                <Download className="w-4 h-4" /> Торрент
+              <button 
+                onClick={() => setSource('torrent')} 
+                className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'torrent' ? 'bg-[#2481cc] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+              >
+                <Download className="w-4 h-4" /> Telegram HLS
               </button>
             </div>
             
@@ -155,12 +189,45 @@ export default function VodPage() {
           </div>
 
           {/* Информация о видео */}
-          <div className="p-6 bg-[#0f0f13] flex-grow">
-            <h1 className="text-2xl font-bold text-white mb-2">Вечер Всратых Хорроров (ВВХ) 2026 — 34</h1>
-            <p className="text-gray-400 text-sm mb-6">Дата стрима: 7 августа 2026 г. (5 дней назад)</p>
+          <div className="p-6 bg-[#0f0f13] flex-grow flex flex-col gap-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white mb-2">{vod?.title || "Загрузка..."}</h1>
+              <p className="text-gray-400 text-sm">В эфире: {vod?.date || ""} • {vod?.views || "0"} просмотров</p>
+            </div>
             
-            <div className="glassmorphism p-4 rounded-xl inline-block">
-              <p className="text-gray-300 text-sm italic">Здесь будет располагаться подробное описание стрима, ссылки на игры и донаты.</p>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-[#141419] p-4 rounded-xl border border-white/5">
+              {/* Аватар стримера */}
+              <img 
+                src="https://static-cdn.jtvnw.net/jtv_user_pictures/54d19318-6c8c-4f81-a968-07bc305417b7-profile_image-70x70.png" 
+                alt="Hyver" 
+                className="w-16 h-16 rounded-full border-2 border-violet-500"
+              />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-white">Hyver</h2>
+                  <svg className="w-4 h-4 text-violet-500 fill-current" viewBox="0 0 20 20"><path d="M10 2l2.25 2.25L15 4.5l.25 2.75 2.25 2.25-2.25 2.25-.25 2.75-2.75-.25L10 18l-2.25-2.25L5 15.5l-.25-2.75L2.5 10l2.25-2.25.25-2.75 2.75.25L10 2z"/><path fill="#0f0f13" d="M13.2 7.7l-4.5 4.5-2.2-2.2-1.4 1.4 3.6 3.6 5.9-5.9z"/></svg>
+                </div>
+                <p className="text-gray-400 text-sm">312 тыс. отслеживающих</p>
+              </div>
+              <div className="sm:ml-auto mt-2 sm:mt-0 flex gap-2">
+                <a href="https://www.twitch.tv/hyver" target="_blank" rel="noreferrer" className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded transition-colors text-sm">
+                  На Twitch
+                </a>
+                <a href="https://t.me/hyvert" target="_blank" rel="noreferrer" className="px-4 py-2 bg-[#2481cc] hover:bg-[#1d6fae] text-white font-semibold rounded transition-colors text-sm">
+                  Telegram
+                </a>
+              </div>
+            </div>
+
+            <div className="glassmorphism p-4 rounded-xl inline-block w-fit">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2 py-1 bg-violet-500/20 text-violet-300 text-xs font-bold rounded">Категория</span>
+                <span className="text-gray-200 font-semibold">{vod?.category || "Just Chatting"}</span>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed max-w-3xl">
+                Официальный архив стримов. Здесь хранятся все записи прямых трансляций, включая игровые прохождения, просмотры видео (ВВХ) и разговорные стримы.<br/><br/>
+                Подписывайтесь на уведомления в Telegram, чтобы не пропускать новые загрузки!
+              </p>
             </div>
           </div>
         </div>
@@ -168,17 +235,24 @@ export default function VodPage() {
         {/* Правая панель: Чат */}
         {!theaterMode && (
           <div className="w-[350px] flex-shrink-0 border-l border-white/5 bg-[#141419] flex flex-col relative transition-all">
-            <div className="p-3 text-center border-b border-white/5 text-sm font-bold tracking-widest text-gray-500">
-              ЧАТ
+            <div className="p-3 text-center border-b border-white/5 text-sm font-bold tracking-widest text-gray-500 uppercase">
+              Чат трансляции
           </div>
           
           {/* Область сообщений */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col justify-end gap-2 text-sm text-gray-300 bg-[#0f0f13]">
-            <p className="text-center text-gray-600 mb-4 italic">История чата пока не загружена...</p>
-            {/* Тестовые сообщения */}
-            <div className="break-words"><span className="text-[#ff5252] font-bold">Hyver:</span> Привет всем, начинаем через 5 минут!</div>
-            <div className="break-words"><span className="text-[#448aff] font-bold">Viewer1:</span> Наконец-то ВВХ!</div>
-            <div className="break-words"><span className="text-[#69f0ae] font-bold">GamerPro:</span> KEKW LUL</div>
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col justify-start gap-3 text-sm text-gray-300 bg-[#0f0f13] custom-scrollbar">
+            {/* Имитация реального чата Hyver */}
+            <div className="text-center text-gray-600 mb-2 text-xs">Добро пожаловать в чат!</div>
+            <div className="break-words"><span className="text-[#FF5252] font-bold">Nightbot:</span> Добро пожаловать на канал Hyver! Подписывайтесь на наш Telegram: t.me/hyvert</div>
+            <div className="break-words"><span className="text-[#FFB300] font-bold">RandomViewer:</span> здарова работяги</div>
+            <div className="break-words"><span className="text-[#4CAF50] font-bold">PepeFrog:</span> KEKW LUL</div>
+            <div className="break-words flex gap-2 items-start">
+              <span className="text-[#2196F3] font-bold shrink-0">Oldfag2018:</span> 
+              <span>когда ВВХ? 🤔</span>
+            </div>
+            <div className="break-words"><span className="text-[#9C27B0] font-bold">GamerPro:</span> о, подруб</div>
+            <div className="break-words"><span className="text-white font-bold bg-[#E91E63] px-1 rounded mr-1 text-[10px]">SUB</span><span className="text-[#00BCD4] font-bold">Hyver_Fan:</span> Привет! Наконец-то дождались)</div>
+            <div className="break-words"><span className="text-[#FF9800] font-bold">ChattingBot:</span> PogChamp PogChamp PogChamp</div>
           </div>
 
           {/* Панель настроек чата */}
