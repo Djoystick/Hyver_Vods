@@ -38,12 +38,6 @@ export default function Home() {
             <h1 className="text-xl font-bold tracking-tight">VOD <span className="text-violet-400">Hyver</span></h1>
           </div>
           
-          <Link href="/search" className="hidden md:flex relative w-96 group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-violet-400 transition-colors" />
-            <div className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-gray-400 group-hover:border-violet-500/50 group-hover:bg-white/10 transition-colors cursor-pointer flex items-center">
-              Поиск стримов, игр, категорий...
-            </div>
-          </Link>
 
           <div className="flex gap-4 items-center">
             <Link href="/search" className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1">
