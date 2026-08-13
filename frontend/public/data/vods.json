@@ -1,5 +1,13 @@
 [
   {
+    "id": 7,
+    "title": "Тот самый тестовый HLS (Telegram)",
+    "date": "2026-08-13T05:02:36.757Z",
+    "category": "Тест",
+    "thumbnail": "/images/thumbnails/thumb2.jpg",
+    "sourceHls": "/vods/7/index.m3u8"
+  },
+  {
     "id": "8",
     "originalId": "-216572359_456240377",
     "title": "«рисовавовое» | HYVER",
