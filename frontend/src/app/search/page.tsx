@@ -234,8 +234,15 @@ export default function SearchPage() {
                   <Link href={`/vod/${vod.id}`} className="relative shrink-0 overflow-hidden rounded shadow-md w-48 sm:w-64 aspect-video bg-[#222]">
                     <img src={vod.thumbnail} alt={vod.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     
+                    {vod.status === "processing" && (
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+                        <div className="w-8 h-8 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin mb-1"></div>
+                        <span className="text-violet-400 font-bold text-[10px] tracking-widest uppercase">В обработке</span>
+                      </div>
+                    )}
+
                     {/* Timestamp / Duration overlay */}
-                    <div className="absolute bottom-0 inset-x-0 bg-black/70 backdrop-blur-sm text-center py-1">
+                    <div className="absolute bottom-0 inset-x-0 bg-black/70 backdrop-blur-sm text-center py-1 z-20">
                       <span className="text-xs font-bold text-white tracking-wide">{vod.duration}</span>
                     </div>
                   </Link>

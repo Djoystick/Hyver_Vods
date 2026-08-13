@@ -264,6 +264,28 @@ async function main() {
     const thumbnailPath = `/thumbnails/${newId}.jpg`;
     await downloadThumbnail(metadata.thumbnailUrl, path.join(THUMBNAILS_DIR, `${newId}.jpg`));
 
+    // СОЗДАНИЕ КАРТОЧКИ В СТАТУСЕ "В ОБРАБОТКЕ" (Раннее добавление)
+    console.log('[*] Создание карточки на сайте (статус: В обработке)...');
+    const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+    const date = new Date();
+    const dateString = `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+
+    const newVod = {
+        id: newId,
+        originalId: metadata.id,
+        title: metadata.title,
+        date: dateString,
+        duration: metadata.duration,
+        views: "0",
+        category: category,
+        thumbnail: thumbnailPath,
+        youtubeId: youtubeId,
+        status: "processing"
+    };
+
+    vods.unshift(newVod);
+    fs.writeFileSync(VODS_JSON_PATH, JSON.stringify(vods, null, 2));
+
     const tempDir = path.resolve(`./temp_vod_${newId}`);
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
     
@@ -290,25 +312,13 @@ async function main() {
         if (!fs.existsSync(finalVodDir)) fs.mkdirSync(finalVodDir, { recursive: true });
         fs.writeFileSync(path.join(finalVodDir, 'master.m3u8'), m3u8Content);
 
-        console.log('[*] Обновление базы данных (vods.json)...');
-        const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-        const date = new Date();
-        const dateString = `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-
-        const newVod = {
-            id: newId,
-            originalId: metadata.id,
-            title: metadata.title,
-            date: dateString,
-            duration: metadata.duration,
-            views: "0",
-            category: category,
-            thumbnail: thumbnailPath,
-            youtubeId: youtubeId
-        };
-
-        vods.unshift(newVod);
-        fs.writeFileSync(VODS_JSON_PATH, JSON.stringify(vods, null, 2));
+        console.log('[*] Обновление базы данных (снятие статуса обработки)...');
+        let currentVods = JSON.parse(fs.readFileSync(VODS_JSON_PATH));
+        const vodIndex = currentVods.findIndex(v => v.id === newId);
+        if (vodIndex !== -1) {
+            delete currentVods[vodIndex].status;
+            fs.writeFileSync(VODS_JSON_PATH, JSON.stringify(currentVods, null, 2));
+        }
 
         console.log('[*] Очистка временных файлов (удаление гигабайтов мусора)...');
         fs.rmSync(tempDir, { recursive: true, force: true });

@@ -141,7 +141,15 @@ export default function VodPage() {
         <div ref={playerContainerRef} className="flex-grow flex flex-col bg-black relative overflow-y-auto custom-scrollbar">
           {/* Плеер */}
           <div className={`w-full relative bg-black flex items-center justify-center transition-all ${theaterMode ? 'h-[calc(100vh-125px)]' : 'aspect-video'}`}>
-            {source === 'youtube' && vod?.youtubeId ? (
+            {vod?.status === 'processing' ? (
+              <div className="text-gray-400 flex flex-col items-center justify-center gap-6 p-8 text-center bg-[#0a0a0c] w-full h-full">
+                <div className="w-16 h-16 rounded-full border-4 border-violet-500/30 border-t-violet-500 animate-spin"></div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-2">Видео находится в обработке</h3>
+                  <p className="max-w-md text-sm leading-relaxed">Сервер скачивает и подготавливает этот стрим для комфортного просмотра. Пожалуйста, зайдите немного позже ☕</p>
+                </div>
+              </div>
+            ) : source === 'youtube' && vod?.youtubeId ? (
               <div className="w-full h-full [&>.plyr]:h-full [&_.plyr__video-wrapper]:h-full [&_video]:h-full">
                 <Player src={vod.youtubeId} type="youtube" />
               </div>
@@ -158,35 +166,37 @@ export default function VodPage() {
           </div>
 
           {/* Панель кнопок под плеером */}
-          <div className="bg-[#141419] p-3 flex flex-wrap items-center justify-between border-b border-white/5">
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setSource('youtube')} 
-                disabled={!vod?.youtubeId}
-                className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${source === 'youtube' ? 'bg-[#FF0000] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
-              >
-                <PlaySquare className="w-4 h-4" /> YouTube
-              </button>
-              <button 
-                onClick={() => setSource('torrent')} 
-                className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'torrent' ? 'bg-[#2481cc] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
-              >
-                <Download className="w-4 h-4" /> Telegram HLS
-              </button>
+          {vod?.status !== 'processing' && (
+            <div className="bg-[#141419] p-3 flex flex-wrap items-center justify-between border-b border-white/5">
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setSource('youtube')} 
+                  disabled={!vod?.youtubeId}
+                  className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${source === 'youtube' ? 'bg-[#FF0000] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+                >
+                  <PlaySquare className="w-4 h-4" /> YouTube
+                </button>
+                <button 
+                  onClick={() => setSource('torrent')} 
+                  className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'torrent' ? 'bg-[#2481cc] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+                >
+                  <Download className="w-4 h-4" /> Telegram HLS
+                </button>
+              </div>
+              
+              <div className="flex gap-2 mt-2 sm:mt-0">
+                <button onClick={handleShare} className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-gray-300 text-sm flex items-center gap-2 transition-colors">
+                  <Share className="w-4 h-4" /> Поделиться
+                </button>
+                <button onClick={() => setTheaterMode(!theaterMode)} className={`px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors ${theaterMode ? 'bg-violet-600 text-white' : 'bg-white/5 hover:bg-white/10 text-gray-300'}`}>
+                  <LayoutTemplate className="w-4 h-4" /> На всё окно
+                </button>
+                <button onClick={handleFullscreen} className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-gray-300 text-sm flex items-center gap-2 transition-colors">
+                  <Maximize2 className="w-4 h-4" /> На весь экран
+                </button>
+              </div>
             </div>
-            
-            <div className="flex gap-2 mt-2 sm:mt-0">
-              <button onClick={handleShare} className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-gray-300 text-sm flex items-center gap-2 transition-colors">
-                <Share className="w-4 h-4" /> Поделиться
-              </button>
-              <button onClick={() => setTheaterMode(!theaterMode)} className={`px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors ${theaterMode ? 'bg-violet-600 text-white' : 'bg-white/5 hover:bg-white/10 text-gray-300'}`}>
-                <LayoutTemplate className="w-4 h-4" /> На всё окно
-              </button>
-              <button onClick={handleFullscreen} className="px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-gray-300 text-sm flex items-center gap-2 transition-colors">
-                <Maximize2 className="w-4 h-4" /> На весь экран
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Информация о видео */}
           <div className="p-6 bg-[#0f0f13] flex-grow flex flex-col gap-6">

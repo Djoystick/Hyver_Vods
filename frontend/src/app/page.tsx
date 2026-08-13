@@ -83,11 +83,18 @@ export default function Home() {
                     alt={vod.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-14 h-14 rounded-full bg-violet-600/80 backdrop-blur flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform">
-                      <Play className="text-white w-6 h-6 fill-white ml-1" />
+                  {vod.status === "processing" ? (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center">
+                      <div className="w-10 h-10 rounded-full border-4 border-violet-500/30 border-t-violet-500 animate-spin mb-2"></div>
+                      <span className="text-violet-400 font-bold text-xs tracking-widest uppercase">В обработке</span>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="w-14 h-14 rounded-full bg-violet-600/80 backdrop-blur flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform">
+                        <Play className="text-white w-6 h-6 fill-white ml-1" />
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {vod.duration}
