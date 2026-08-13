@@ -62,7 +62,8 @@ async function getMetadata(url, isAuto = false) {
         id: data.id,
         title: data.title,
         duration: data.duration_string || data.duration,
-        thumbnailUrl: data.thumbnail
+        thumbnailUrl: data.thumbnail,
+        timestamp: data.timestamp
     };
 }
 
@@ -267,7 +268,7 @@ async function main() {
     // СОЗДАНИЕ КАРТОЧКИ В СТАТУСЕ "В ОБРАБОТКЕ" (Раннее добавление)
     console.log('[*] Создание карточки на сайте (статус: В обработке)...');
     const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-    const date = new Date();
+    const date = metadata.timestamp ? new Date(metadata.timestamp * 1000) : new Date();
     const dateString = `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 
     const newVod = {
