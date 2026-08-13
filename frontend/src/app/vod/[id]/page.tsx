@@ -18,7 +18,16 @@ interface VOD {
   category: string;
   thumbnail: string;
   youtubeId: string;
+  vkId?: string;
+  playlistId?: string;
   status?: string;
+}
+
+interface Playlist {
+  id: string;
+  title: string;
+  thumbnail: string;
+  vodIds: string[];
 }
 
 export default function VodPage() {
@@ -26,25 +35,33 @@ export default function VodPage() {
   const id = params.id as string;
 
   const [vod, setVod] = useState<VOD | null>(null);
-  const [activeTab, setActiveTab] = useState<'playlist' | 'timecodes'>('timecodes');
+  const [allVods, setAllVods] = useState<VOD[]>([]);
+  const [playlist, setPlaylist] = useState<Playlist | null>(null);
+  const [activeTab, setActiveTab] = useState<'playlist' | 'timecodes'>('playlist');
   const [source, setSource] = useState<'youtube' | 'torrent' | 'vk'>('youtube');
   const [chatSettings, setChatSettings] = useState({ bots: false, emotes: true });
   const [theaterMode, setTheaterMode] = useState(false);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/data/vods.json')
-      .then(res => res.json())
-      .then((data: VOD[]) => {
-        const found = data.find(v => v.id === id);
-        if (found) {
-          setVod(found);
-          if (found.youtubeId) setSource('youtube');
-          else if (found.vkId) setSource('vk');
-          else setSource('torrent');
+    Promise.all([
+      fetch('/data/vods.json').then(res => res.json()),
+      fetch('/data/playlists.json').then(res => res.json()).catch(() => [])
+    ]).then(([vodsData, playlistsData]) => {
+      setAllVods(vodsData);
+      const found = vodsData.find((v: VOD) => v.id === id);
+      if (found) {
+        setVod(found);
+        if (found.youtubeId) setSource('youtube');
+        else if (found.vkId) setSource('vk');
+        else setSource('torrent');
+        
+        if (found.playlistId) {
+          const pl = playlistsData.find((p: Playlist) => p.id === found.playlistId);
+          if (pl) setPlaylist(pl);
         }
-      })
-      .catch(err => console.error(err));
+      }
+    }).catch(err => console.error(err));
   }, [id]);
 
   const handleShare = () => {
@@ -112,6 +129,49 @@ export default function VodPage() {
           </div>
           
           <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+            {activeTab === 'playlist' && playlist && (
+              <div className="flex flex-col gap-4">
+                <div className="relative rounded-lg overflow-hidden border border-white/10 group mt-1 mx-1">
+                  <img src={playlist.thumbnail} alt={playlist.title} className="w-full aspect-video object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-3">
+                    <span className="text-white font-bold text-sm leading-tight drop-shadow-md">{playlist.title}</span>
+                    <span className="text-gray-300 text-xs mt-1">{playlist.vodIds.length} видео</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {playlist.vodIds.map((vId) => {
+                    const plVod = allVods.find(v => v.id === vId);
+                    if (!plVod) return null;
+                    const isActive = plVod.id === id;
+                    return (
+                      <Link key={vId} href={`/vod/${plVod.id}`}>
+                        <div className={`flex gap-3 p-2 rounded-lg cursor-pointer transition-colors ${isActive ? 'bg-violet-600/20 border border-violet-500/30' : 'hover:bg-white/5 border border-transparent'}`}>
+                           <div className="relative w-24 aspect-video shrink-0 rounded overflow-hidden">
+                             <img src={plVod.thumbnail} className="w-full h-full object-cover" />
+                             {isActive && (
+                               <div className="absolute inset-0 bg-violet-500/30 flex items-center justify-center">
+                                  <Play className="w-6 h-6 text-white fill-white" />
+                               </div>
+                             )}
+                           </div>
+                           <div className="flex flex-col justify-center overflow-hidden">
+                              <span className={`text-xs font-semibold line-clamp-2 leading-snug ${isActive ? 'text-white' : 'text-gray-300'}`}>{plVod.title}</span>
+                              <span className="text-[10px] text-gray-500 mt-1">{plVod.date}</span>
+                           </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'playlist' && !playlist && (
+              <div className="text-center text-sm text-gray-500 mt-10 p-4 border border-white/5 rounded mx-2 bg-white/5">
+                Это видео не принадлежит ни к одному плейлисту.
+              </div>
+            )}
+
             {activeTab === 'timecodes' && timecodes.map((group, i) => (
               <div key={i} className="mb-2">
                 <div className="flex items-center gap-1 text-gray-300 text-sm font-semibold p-1 cursor-pointer hover:bg-white/5 rounded">
