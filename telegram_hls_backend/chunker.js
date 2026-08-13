@@ -138,7 +138,7 @@ function chunkLocalVideo(inputPath, playlistPath) {
             .outputOptions([
                 '-c copy',
                 '-start_number 0',
-                '-hls_time 10',
+                '-hls_time 15',
                 '-hls_list_size 0',
                 '-f hls'
             ])
