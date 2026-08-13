@@ -43,6 +43,19 @@ function formatTime(ms) {
     return m > 0 ? `${m}м ${s}с` : `${s}с`;
 }
 
+// Автоматический пуш в Git
+async function autoGitPush(message) {
+    console.log(`\n[*] Отправка изменений на GitHub (Vercel Deploy): ${message}...`);
+    try {
+        await execPromise('git add .');
+        await execPromise(`git commit -m "${message}"`);
+        await execPromise('git push');
+        console.log('[+] Успешно отправлено на GitHub!');
+    } catch (e) {
+        console.log('[-] Отправка не удалась (возможно нет изменений):', e.message.split('\n')[0]);
+    }
+}
+
 // Утилита для интерактивного ввода
 const askQuestion = (query) => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -287,6 +300,8 @@ async function main() {
     vods.unshift(newVod);
     fs.writeFileSync(VODS_JSON_PATH, JSON.stringify(vods, null, 2));
 
+    await autoGitPush(`Auto add VOD ${newId} (Processing State)`);
+
     const tempDir = path.resolve(`./temp_vod_${newId}`);
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
     
@@ -321,6 +336,8 @@ async function main() {
             fs.writeFileSync(VODS_JSON_PATH, JSON.stringify(currentVods, null, 2));
         }
 
+        await autoGitPush(`Auto add VOD ${newId} (Finalize & Playlist)`);
+
         console.log('[*] Очистка временных файлов (удаление гигабайтов мусора)...');
         fs.rmSync(tempDir, { recursive: true, force: true });
 
@@ -329,7 +346,6 @@ async function main() {
         console.log('✅ УСПЕХ! Стрим успешно добавлен!');
         console.log(`⏱ Общее время обработки: ${formatTime(totalScriptTime)}`);
         console.log(`ID: ${newId} | ${newVod.title}`);
-        console.log(`Не забудьте сделать: git add . && git commit -m "Auto add VOD ${newId}" && git push`);
         console.log('==================================\n');
 
     } catch (err) {
