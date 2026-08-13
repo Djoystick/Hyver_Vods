@@ -79,12 +79,7 @@ export default function VodPage() {
     }
   };
 
-  const timecodes = [
-    { section: 'Интро', items: [{ time: '0:45', title: 'Интро' }, { time: '3:53 - 6:36', title: 'Стример' }, { time: '10:39', title: 'Звуки для доната' }] },
-    { section: 'Трейлеры', items: [{ time: '22:21', title: 'Syndicate' }, { time: '43:55', title: 'Frozen Ship' }] },
-    { section: 'The Backrooms: Incident 1997 - пройдено', items: [{ time: '49:30', title: 'Меню' }, { time: '50:47', title: 'Интро' }, { time: '51:22', title: 'Игра' }] },
-    { section: 'Lurking (демо)', items: [{ time: '1:22:01', title: 'Меню' }, { time: '1:25:51', title: 'Интро' }] },
-  ];
+  const timecodes: { section: string, items: { time: string, title: string }[] }[] = [];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f13]">
@@ -211,7 +206,7 @@ export default function VodPage() {
               ></iframe>
             ) : source === 'vk' && vod?.vkId ? (
               <iframe
-                src={`https://vk.com/video_ext.php?${vod.vkId}`}
+                src={`https://vk.com/video_ext.php?oid=${vod.vkId.split('_')[0]}&id=${vod.vkId.split('_')[1]}&hd=2`}
                 className="w-full h-full"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture;"
                 allowFullScreen
@@ -315,18 +310,7 @@ export default function VodPage() {
           
           {/* Область сообщений */}
           <div className="flex-1 overflow-y-auto p-4 flex flex-col justify-start gap-3 text-sm text-gray-300 bg-[#0f0f13] custom-scrollbar">
-            {/* Имитация реального чата Hyver */}
-            <div className="text-center text-gray-600 mb-2 text-xs">Добро пожаловать в чат!</div>
-            <div className="break-words"><span className="text-[#FF5252] font-bold">Nightbot:</span> Добро пожаловать на канал Hyver! Всем приятного просмотра.</div>
-            <div className="break-words"><span className="text-[#FFB300] font-bold">RandomViewer:</span> здарова работяги</div>
-            <div className="break-words"><span className="text-[#4CAF50] font-bold">PepeFrog:</span> KEKW LUL</div>
-            <div className="break-words flex gap-2 items-start">
-              <span className="text-[#2196F3] font-bold shrink-0">Oldfag2018:</span> 
-              <span>во что сегодня играем? 🤔</span>
-            </div>
-            <div className="break-words"><span className="text-[#9C27B0] font-bold">GamerPro:</span> о, подруб</div>
-            <div className="break-words"><span className="text-white font-bold bg-[#E91E63] px-1 rounded mr-1 text-[10px]">SUB</span><span className="text-[#00BCD4] font-bold">Hyver_Fan:</span> Привет! Наконец-то дождались)</div>
-            <div className="break-words"><span className="text-[#FF9800] font-bold">ChattingBot:</span> PogChamp PogChamp PogChamp</div>
+            <div className="text-center text-gray-600 mt-10 text-sm">История чата пока недоступна для этого стрима.</div>
           </div>
 
           {/* Панель настроек чата */}
