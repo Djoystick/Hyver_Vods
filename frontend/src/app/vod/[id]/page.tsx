@@ -23,11 +23,11 @@ interface VOD {
 
 export default function VodPage() {
   const params = useParams();
-  const id = params.id;
+  const id = params.id as string;
 
   const [vod, setVod] = useState<VOD | null>(null);
   const [activeTab, setActiveTab] = useState<'playlist' | 'timecodes'>('timecodes');
-  const [source, setSource] = useState<'youtube' | 'torrent'>('torrent');
+  const [source, setSource] = useState<'youtube' | 'torrent' | 'vk'>('youtube');
   const [chatSettings, setChatSettings] = useState({ bots: false, emotes: true });
   const [theaterMode, setTheaterMode] = useState(false);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -39,10 +39,9 @@ export default function VodPage() {
         const found = data.find(v => v.id === id);
         if (found) {
           setVod(found);
-          // Устанавливаем YouTube по умолчанию, если он есть
-          if (found.youtubeId) {
-            setSource('youtube');
-          }
+          if (found.youtubeId) setSource('youtube');
+          else if (found.vkId) setSource('vk');
+          else setSource('torrent');
         }
       })
       .catch(err => console.error(err));
@@ -58,11 +57,11 @@ export default function VodPage() {
     if (btn) {
       btn.click();
     } else {
-      console.error('Fullscreen button not found');
+      const el = playerContainerRef.current;
+      if (el?.requestFullscreen) el.requestFullscreen();
     }
   };
 
-  // Dummy Timecodes matching the screenshot
   const timecodes = [
     { section: 'Интро', items: [{ time: '0:45', title: 'Интро' }, { time: '3:53 - 6:36', title: 'Стример' }, { time: '10:39', title: 'Звуки для доната' }] },
     { section: 'Трейлеры', items: [{ time: '22:21', title: 'Syndicate' }, { time: '43:55', title: 'Frozen Ship' }] },
@@ -72,7 +71,6 @@ export default function VodPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f13]">
-      {/* Верхняя навигация */}
       <nav className="w-full z-50 p-4 border-b border-white/5 bg-[#141419]">
         <div className="max-w-[1920px] mx-auto flex items-center gap-6">
           <Link href="/">
@@ -94,13 +92,10 @@ export default function VodPage() {
         </div>
       </nav>
 
-      {/* Основной контейнер 3-колоночный */}
       <main className="flex-grow flex max-w-[1920px] mx-auto w-full h-[calc(100vh-65px)] overflow-hidden">
         
-        {/* Левая панель: Плейлист и Таймкоды */}
         {!theaterMode && (
           <div className="w-[300px] flex-shrink-0 border-r border-white/5 bg-[#141419] flex flex-col overflow-hidden transition-all">
-            {/* Табы */}
           <div className="flex text-xs font-bold tracking-widest text-gray-500 border-b border-white/5">
             <button 
               onClick={() => setActiveTab('playlist')}
@@ -116,7 +111,6 @@ export default function VodPage() {
             </button>
           </div>
           
-          {/* Контент таймкодов */}
           <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
             {activeTab === 'timecodes' && timecodes.map((group, i) => (
               <div key={i} className="mb-2">
@@ -138,9 +132,7 @@ export default function VodPage() {
         </div>
         )}
 
-        {/* Центр: Плеер и Информация */}
         <div ref={playerContainerRef} className="flex-grow flex flex-col bg-black relative overflow-y-auto custom-scrollbar">
-          {/* Плеер */}
           <div className={`w-full relative bg-black flex items-center justify-center transition-all ${theaterMode ? 'h-[calc(100vh-125px)]' : 'aspect-video'}`}>
             {vod?.status === 'processing' ? (
               <div className="text-gray-400 flex flex-col items-center justify-center gap-6 p-8 text-center bg-[#0a0a0c] w-full h-full">
@@ -151,9 +143,19 @@ export default function VodPage() {
                 </div>
               </div>
             ) : source === 'youtube' && vod?.youtubeId ? (
-              <div className="w-full h-full [&>.plyr]:h-full [&_.plyr__video-wrapper]:h-full [&_video]:h-full">
-                <Player src={vod.youtubeId} type="youtube" />
-              </div>
+              <iframe
+                src={`https://www.youtube.com/embed/${vod.youtubeId}?autoplay=0`}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            ) : source === 'vk' && vod?.vkId ? (
+              <iframe
+                src={`https://vk.com/video_ext.php?${vod.vkId}`}
+                className="w-full h-full"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture;"
+                allowFullScreen
+              ></iframe>
             ) : source === 'torrent' ? (
               <div className="w-full h-full [&>.plyr]:h-full [&_.plyr__video-wrapper]:h-full [&_video]:h-full">
                 <Player src={`/vods/${id}/master.m3u8`} type="hls" />
@@ -166,23 +168,32 @@ export default function VodPage() {
             )}
           </div>
 
-          {/* Панель кнопок под плеером */}
           {vod?.status !== 'processing' && (
-            <div className="bg-[#141419] p-3 flex flex-wrap items-center justify-between border-b border-white/5">
+            <div className="bg-[#14151a] p-4 border-b border-[#1f2028] flex flex-wrap items-center justify-between">
               <div className="flex gap-2">
-                <button 
-                  onClick={() => setSource('youtube')} 
-                  disabled={!vod?.youtubeId}
-                  className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${source === 'youtube' ? 'bg-[#FF0000] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
-                >
-                  <PlaySquare className="w-4 h-4" /> YouTube
-                </button>
-                <button 
-                  onClick={() => setSource('torrent')} 
-                  className={`px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'torrent' ? 'bg-[#2481cc] text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
-                >
-                  <Download className="w-4 h-4" /> Telegram HLS
-                </button>
+                {vod?.youtubeId && (
+                  <button
+                    onClick={() => setSource('youtube')}
+                    className={`px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'youtube' ? 'bg-[#2a2b36] text-white' : 'bg-transparent text-gray-400 hover:text-white'}`}
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    YouTube
+                  </button>
+                )}
+                {vod?.vkId && (
+                  <button
+                    onClick={() => setSource('vk')}
+                    className={`px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 transition-colors ${source === 'vk' ? 'bg-[#0077FF] text-white' : 'bg-[#2a2b36] text-gray-400 hover:text-white'}`}
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M15.077 7.042c1.93-.05 3.869.043 5.792.052.744.025 1.57.14 2.155.65.617.536.83 1.348.883 2.135.1 1.48.09 2.97.094 4.453 0 1.25-.018 2.508-.106 3.753-.083 1.155-.386 2.37-1.39 3.064-.813.563-1.84.582-2.775.59-1.996.017-3.991.002-5.987.003-2.106 0-4.212.015-6.318-.003-.935-.008-1.962-.027-2.775-.59-1.004-.694-1.307-1.909-1.39-3.064-.088-1.245-.106-2.503-.106-3.753.004-1.483-.006-2.973.094-4.453.053-.787.266-1.599.883-2.135.585-.51 1.411-.625 2.155-.65 2.535-.022 5.075-.015 7.61-.018.06.012.12.006.18.016zm-.34 3.013c-.02-.008-.042-.014-.063-.02-1.385.748-2.774 1.49-4.16 2.235-.38.204-.37.784.004.992 1.383.771 2.774 1.527 4.162 2.293.414.228.917-.076.913-.553-.005-1.528 0-3.058-.003-4.586-.002-.27-.24-.462-.486-.363-.122.05-.25.105-.366.002z"/></svg>
+                    VK Video
+                  </button>
+                )}
+                {!vod?.youtubeId && !vod?.vkId && (
+                  <button onClick={() => setSource('torrent')} className="px-3 py-1.5 rounded bg-[#2481cc] text-white text-sm font-semibold flex items-center gap-2">
+                    <Download className="w-4 h-4" /> Скачать
+                  </button>
+                )}
               </div>
               
               <div className="flex gap-2 mt-2 sm:mt-0">
