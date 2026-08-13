@@ -18,6 +18,7 @@ interface VOD {
   category: string;
   thumbnail: string;
   youtubeId: string;
+  status?: string;
 }
 
 export default function VodPage() {

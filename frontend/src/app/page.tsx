@@ -13,6 +13,7 @@ interface VOD {
   duration: string;
   views: string;
   category: string;
+  status?: string;
   thumbnail: string;
   youtubeId: string;
 }
